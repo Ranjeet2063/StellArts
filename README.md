@@ -198,4 +198,3 @@ This project is licensed under the **MIT License**.
 
 
 
-<!-- Add GitHub Action for ruff and mypy on the backend. -->
