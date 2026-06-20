@@ -161,7 +161,9 @@ def test_availability_update_persists_to_database(client, db_session):
 
     # Update availability to False
     update_data = {"is_available": False}
-    response = client.patch("api/v1/artisans/availability", json=update_data, headers=headers)
+    response = client.put(
+        "api/v1/artisans/availability", json=update_data, headers=headers
+    )
     assert response.status_code == status.HTTP_200_OK
 
     # Verify database was updated
@@ -196,7 +198,9 @@ def test_availability_update_returns_404_when_artisan_not_found(client, db_sessi
 
     # Try to update availability
     update_data = {"is_available": False}
-    response = client.patch("api/v1/artisans/availability", json=update_data, headers=headers)
+    response = client.put(
+        "api/v1/artisans/availability", json=update_data, headers=headers
+    )
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
@@ -243,7 +247,9 @@ def test_portfolio_creation_persists_to_database(client, db_session):
         "title": "Test Project",
         "image_url": "https://example.com/image.jpg",
     }
-    response = client.post("api/v1/artisans/portfolio/add", json=portfolio_data, headers=headers)
+    response = client.post(
+        "api/v1/artisans/portfolio/add", json=portfolio_data, headers=headers
+    )
     assert response.status_code == status.HTTP_201_CREATED
 
     # Verify portfolio item was created in database
@@ -365,4 +371,6 @@ def test_portfolio_retrieval_returns_empty_list_when_no_records(client, db_sessi
 
     data = response.json()
     assert "portfolio_items" in data
-    assert len(data["portfolio_items"]) == 0, "Should return empty list when no records exist"
+    assert (
+        len(data["portfolio_items"]) == 0
+    ), "Should return empty list when no records exist"

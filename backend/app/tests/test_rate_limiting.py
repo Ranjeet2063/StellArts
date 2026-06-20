@@ -1,5 +1,14 @@
 """Test rate limiting on auth endpoints."""
 from fastapi import status
+import pytest
+from app.core.limiter import limiter
+
+
+@pytest.fixture(autouse=True)
+def enable_limiter():
+    limiter.enabled = True
+    yield
+    limiter.enabled = False
 
 
 def test_login_rate_limiting(client):
@@ -10,7 +19,10 @@ def test_login_rate_limiting(client):
     for _ in range(5):
         response = client.post("api/v1/auth/login", json=login_data)
         # Should either be 401 (wrong password) or 200 (if user exists)
-        assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_200_OK]
+        assert response.status_code in [
+            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_200_OK,
+        ]
 
     # 6th request should trigger rate limit (429)
     response = client.post("api/v1/auth/login", json=login_data)
@@ -34,7 +46,10 @@ def test_register_rate_limiting(client):
         register_data["email"] = f"test{_}@example.com"
         response = client.post("api/v1/auth/register", json=register_data)
         # Should either be 201 (success) or 400 (duplicate email)
-        assert response.status_code in [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
+        assert response.status_code in [
+            status.HTTP_201_CREATED,
+            status.HTTP_400_BAD_REQUEST,
+        ]
 
     # 4th request should trigger rate limit (429)
     register_data["email"] = "test4@example.com"
@@ -66,7 +81,10 @@ def test_refresh_rate_limiting(client):
     for _ in range(10):
         response = client.post("api/v1/auth/refresh", json=refresh_data)
         # Should be 200 (success) or 401 (if token is invalid)
-        assert response.status_code in [status.HTTP_200_OK, status.HTTP_401_UNAUTHORIZED]
+        assert response.status_code in [
+            status.HTTP_200_OK,
+            status.HTTP_401_UNAUTHORIZED,
+        ]
 
     # 11th request should trigger rate limit (429)
     response = client.post("api/v1/auth/refresh", json=refresh_data)

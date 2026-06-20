@@ -20,8 +20,10 @@ from app.core.config import settings as _settings
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
+from app.core.limiter import limiter
 
 _settings.REQUIRE_EMAIL_VERIFICATION = False
+limiter.enabled = False
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}

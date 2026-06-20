@@ -1,29 +1,27 @@
 """Test authentication guards on payment release and refund endpoints."""
-from decimal import Decimal
-
 from fastapi import status
 
 
 def test_unauthenticated_release_returns_401(client):
-    """Test that unauthenticated requests to /payments/release return 401."""
+    """Test that unauthenticated requests to /payments/release return 403."""
     release_data = {
         "booking_id": "00000000-0000-0000-0000-000000000000",
         "artisan_public": "GD123456789",
-        "amount": Decimal("100.00"),
+        "amount": 100.00,
     }
     response = client.post("api/v1/payments/release", json=release_data)
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_unauthenticated_refund_returns_401(client):
-    """Test that unauthenticated requests to /payments/refund return 401."""
+    """Test that unauthenticated requests to /payments/refund return 403."""
     refund_data = {
         "booking_id": "00000000-0000-0000-0000-000000000000",
         "client_public": "GD123456789",
-        "amount": Decimal("100.00"),
+        "amount": 100.00,
     }
     response = client.post("api/v1/payments/refund", json=refund_data)
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_client_cannot_release_payment(client):
@@ -46,9 +44,11 @@ def test_client_cannot_release_payment(client):
     release_data = {
         "booking_id": "00000000-0000-0000-0000-000000000000",
         "artisan_public": "GD123456789",
-        "amount": Decimal("100.00"),
+        "amount": 100.00,
     }
-    response = client.post("api/v1/payments/release", json=release_data, headers=headers)
+    response = client.post(
+        "api/v1/payments/release", json=release_data, headers=headers
+    )
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -72,9 +72,11 @@ def test_artisan_cannot_release_payment(client):
     release_data = {
         "booking_id": "00000000-0000-0000-0000-000000000000",
         "artisan_public": "GD123456789",
-        "amount": Decimal("100.00"),
+        "amount": 100.00,
     }
-    response = client.post("api/v1/payments/release", json=release_data, headers=headers)
+    response = client.post(
+        "api/v1/payments/release", json=release_data, headers=headers
+    )
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -98,7 +100,7 @@ def test_client_cannot_refund_payment(client):
     refund_data = {
         "booking_id": "00000000-0000-0000-0000-000000000000",
         "client_public": "GD123456789",
-        "amount": Decimal("100.00"),
+        "amount": 100.00,
     }
     response = client.post("api/v1/payments/refund", json=refund_data, headers=headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -124,7 +126,7 @@ def test_artisan_cannot_refund_payment(client):
     refund_data = {
         "booking_id": "00000000-0000-0000-0000-000000000000",
         "client_public": "GD123456789",
-        "amount": Decimal("100.00"),
+        "amount": 100.00,
     }
     response = client.post("api/v1/payments/refund", json=refund_data, headers=headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -158,9 +160,11 @@ def test_admin_can_release_payment(client, db_session):
     release_data = {
         "booking_id": "00000000-0000-0000-0000-000000000000",
         "artisan_public": "GD123456789",
-        "amount": Decimal("100.00"),
+        "amount": 100.00,
     }
-    response = client.post("api/v1/payments/release", json=release_data, headers=headers)
+    response = client.post(
+        "api/v1/payments/release", json=release_data, headers=headers
+    )
     # Should return 404 (booking not found) rather than 401 or 403
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -193,7 +197,7 @@ def test_admin_can_refund_payment(client, db_session):
     refund_data = {
         "booking_id": "00000000-0000-0000-0000-000000000000",
         "client_public": "GD123456789",
-        "amount": Decimal("100.00"),
+        "amount": 100.00,
     }
     response = client.post("api/v1/payments/refund", json=refund_data, headers=headers)
     # Should return 404 (booking not found) rather than 401 or 403

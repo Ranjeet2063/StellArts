@@ -4,6 +4,8 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi import Request
+from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
@@ -33,7 +35,17 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+def rate_limit_custom_handler(request: Request, exc: RateLimitExceeded):
+    response = _rate_limit_exceeded_handler(request, exc)
+    if "Retry-After" not in response.headers:
+        # Fallback to ensure the header is always present as required by tests/clients
+        response.headers["Retry-After"] = "60"
+    return response
+
+
+app.add_exception_handler(RateLimitExceeded, rate_limit_custom_handler)
 
 # Ensure static/avatars directory exists
 static_path = os.path.join(os.getcwd(), settings.STATIC_DIR)
